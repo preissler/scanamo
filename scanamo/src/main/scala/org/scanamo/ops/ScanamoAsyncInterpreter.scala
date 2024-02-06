@@ -64,6 +64,6 @@ class ScanamoAsyncInterpreter(client: DynamoDbAsyncClient)(implicit ec: Executio
       case ConditionalUpdate(req) =>
         runEitherConditionalCheckFailed(client.updateItem(JavaRequests.update(req)))
       case TransactWriteAll(req) =>
-        run(client.transactWriteItems(JavaRequests.transactItems(req)))
+        runEitherConditionalCheckFailed(client.transactWriteItems(JavaRequests.transactItems(req)))
     }
 }

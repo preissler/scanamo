@@ -43,7 +43,6 @@ import software.amazon.awssdk.services.dynamodb.model.{
   QueryResponse,
   ScanRequest,
   ScanResponse,
-  TransactWriteItemsRequest,
   TransactWriteItemsResponse,
   UpdateItemRequest,
   UpdateItemResponse
@@ -100,7 +99,11 @@ private[scanamo] class PekkoInterpreter(implicit client: DynamoDbAsyncClient, sy
             Either.left(e)
           }
       case TransactWriteAll(req) =>
-        run[TransactWriteItemsRequest, TransactWriteItemsResponse](JavaRequests.transactItems(req))
+      run(JavaRequests.transactItems(req))
+        .map(Either.right[ConditionalCheckFailedException, TransactWriteItemsResponse])
+        .recover { case e: ConditionalCheckFailedException =>
+          Either.left(e)
+        }
     }
 }
 

@@ -56,6 +56,8 @@ class ScanamoSyncInterpreter(client: DynamoDbClient) extends (ScanamoOpsA ~> Id)
           client.updateItem(JavaRequests.update(req))
         }
       case TransactWriteAll(req) =>
-        client.transactWriteItems(JavaRequests.transactItems(req))
+        Either.catchOnly[ConditionalCheckFailedException] {
+          client.transactWriteItems(JavaRequests.transactItems(req))
+        }
     }
 }
