@@ -17,7 +17,7 @@
 package org.scanamo
 
 import cats.{Monad, MonoidK}
-import software.amazon.awssdk.services.dynamodb.model.{ConditionalCheckFailedException, QueryResponse, ScanResponse, TransactWriteItemsResponse}
+import software.amazon.awssdk.services.dynamodb.model.{QueryResponse, ScanResponse, TransactWriteItemsResponse, TransactionCanceledException}
 import org.scanamo.DynamoResultStream.{QueryResponseStream, ScanResponseStream}
 import org.scanamo.ops.{ScanamoOps, ScanamoOpsT}
 import org.scanamo.query.*
@@ -174,15 +174,15 @@ case class Table[V: DynamoFormat](name: String) {
   def descending =
     TableWithOptions(name, ScanamoQueryOptions.default).descending
 
-  def transactPutAll(vs: List[V]): ScanamoOps[Either[ConditionalCheckFailedException, TransactWriteItemsResponse]] =
+  def transactPutAll(vs: List[V]): ScanamoOps[Either[TransactionCanceledException, TransactWriteItemsResponse]] =
     ScanamoFree.transactPutAllTable(name)(vs)
 
   def transactUpdateAll(
     vs: List[(UniqueKey[_], UpdateExpression)]
-  ): ScanamoOps[Either[ConditionalCheckFailedException, TransactWriteItemsResponse]]  =
+  ): ScanamoOps[Either[TransactionCanceledException, TransactWriteItemsResponse]]  =
     ScanamoFree.transactUpdateAllTable(name)(vs)
 
-  def transactDeleteAll(vs: List[UniqueKey[_]]): ScanamoOps[Either[ConditionalCheckFailedException, TransactWriteItemsResponse]] =
+  def transactDeleteAll(vs: List[UniqueKey[_]]): ScanamoOps[Either[TransactionCanceledException, TransactWriteItemsResponse]] =
     ScanamoFree.transactDeleteAllTable(name)(vs)
 }
 

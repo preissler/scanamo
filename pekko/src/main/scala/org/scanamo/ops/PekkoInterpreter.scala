@@ -25,28 +25,7 @@ import cats.syntax.either.*
 import cats.~>
 import org.apache.pekko.actor.ClassicActorSystemProvider
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient
-import software.amazon.awssdk.services.dynamodb.model.{
-  BatchGetItemRequest,
-  BatchGetItemResponse,
-  BatchWriteItemRequest,
-  BatchWriteItemResponse,
-  ConditionalCheckFailedException,
-  DeleteItemRequest,
-  DeleteItemResponse,
-  DynamoDbRequest,
-  DynamoDbResponse,
-  GetItemRequest,
-  GetItemResponse,
-  PutItemRequest,
-  PutItemResponse,
-  QueryRequest,
-  QueryResponse,
-  ScanRequest,
-  ScanResponse,
-  TransactWriteItemsResponse,
-  UpdateItemRequest,
-  UpdateItemResponse
-}
+import software.amazon.awssdk.services.dynamodb.model.{BatchGetItemRequest, BatchGetItemResponse, BatchWriteItemRequest, BatchWriteItemResponse, ConditionalCheckFailedException, DeleteItemRequest, DeleteItemResponse, DynamoDbRequest, DynamoDbResponse, GetItemRequest, GetItemResponse, PutItemRequest, PutItemResponse, QueryRequest, QueryResponse, ScanRequest, ScanResponse, TransactWriteItemsResponse, TransactionCanceledException, UpdateItemRequest, UpdateItemResponse}
 
 import java.util.concurrent.CompletionException
 
@@ -100,8 +79,8 @@ private[scanamo] class PekkoInterpreter(implicit client: DynamoDbAsyncClient, sy
           }
       case TransactWriteAll(req) =>
       run(JavaRequests.transactItems(req))
-        .map(Either.right[ConditionalCheckFailedException, TransactWriteItemsResponse])
-        .recover { case e: ConditionalCheckFailedException =>
+        .map(Either.right[TransactionCanceledException, TransactWriteItemsResponse])
+        .recover { case e: TransactionCanceledException =>
           Either.left(e)
         }
     }
